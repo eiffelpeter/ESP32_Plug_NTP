@@ -1,0 +1,50 @@
+// Literal string
+const char *indexHtml = R"literal(
+  <!DOCTYPE html>
+  <link rel='icon' href='/favicon.ico' sizes='any'>
+  <body style='width:480px'>
+    <h2>Firmware Update</h2>
+    <form method='POST' enctype='multipart/form-data' id='upload-form'>
+      <input type='file' id='file' name='update'>
+      <input type='submit' value='Update'>
+    </form>
+    <br>
+    <div id='prg' style='width:0;color:white;text-align:center'>0%</div>
+  </body>
+  <script>
+    var prg = document.getElementById('prg');
+    var form = document.getElementById('upload-form');
+    form.addEventListener('submit', el=>{
+      prg.style.backgroundColor = 'blue';
+      el.preventDefault();
+      var data = new FormData(form);
+      var req = new XMLHttpRequest();
+      var fsize = document.getElementById('file').files[0].size;
+      req.open('POST', '/update?size=' + fsize);
+      req.upload.addEventListener('progress', p=>{
+        let w = Math.round(p.loaded/p.total*100) + '%';
+          if(p.lengthComputable){
+             prg.innerHTML = w;
+             prg.style.width = w;
+          }
+          if(w == '100%') prg.style.backgroundColor = 'black';
+      });
+      req.send(data);
+     });
+  </script>
+)literal";
+
+// Compressed gzip in C include file style
+// listing was created using `xxd -i favicon.ico.gz`
+const char favicon_ico_gz[] = {
+  0x1f, 0x8b, 0x08, 0x08, 0x0d, 0x03, 0x76, 0x67, 0x00, 0x03, 0x70, 0x6c,
+  0x75, 0x67, 0x2e, 0x69, 0x63, 0x6f, 0x00, 0xa5, 0xcb, 0x31, 0x0a, 0x80,
+  0x40, 0x0c, 0x44, 0xd1, 0xef, 0xda, 0xcb, 0x56, 0xd6, 0x96, 0x1e, 0xc3,
+  0x8b, 0x79, 0x27, 0xc1, 0x5e, 0x17, 0xac, 0x3d, 0xd2, 0xb2, 0xce, 0x98,
+  0xce, 0xd6, 0x09, 0x8f, 0x84, 0x84, 0x40, 0xa7, 0xca, 0x39, 0xbd, 0x7d,
+  0x03, 0x46, 0x99, 0x25, 0xcb, 0x24, 0xde, 0x3b, 0x8b, 0x5c, 0x43, 0x48,
+  0x04, 0xa7, 0xb5, 0x26, 0x50, 0x7a, 0x38, 0x2b, 0x1c, 0x6b, 0xf0, 0xbc,
+  0xdb, 0xfd, 0x51, 0xe3, 0x66, 0xfe, 0xf1, 0xef, 0xdf, 0x3c, 0xa9, 0x92,
+  0xdc, 0x2d, 0xc6, 0x00, 0x00, 0x00
+};
+const int favicon_ico_gz_len = 102;
