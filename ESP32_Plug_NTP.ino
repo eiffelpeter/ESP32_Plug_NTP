@@ -6,6 +6,7 @@
 #include "plug_sntp.h"
 #include "led_ctrl.h"
 #include "plug_timer.h"
+#include "esp_mac.h"// For esp_read_mac
 
 const char compile_date[] = __DATE__ " " __TIME__;
 
@@ -171,11 +172,16 @@ void setup() {
   Wire.begin(I2C_SDA, I2C_SCL, I2C_FREQ);
   Serial.println("Initializing I2C bus...");
 
+  uint8_t mac[6];
+  esp_read_mac(mac, ESP_MAC_WIFI_SOFTAP); // Read the Bluetooth MAC address
+  char deviceName[30];
+  sprintf(deviceName, "PLUG_%02X%02X%02X%02X%02X%02X",mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
   // Set WiFi mode to AP_STA
   WiFi.mode(WIFI_AP_STA);
 
   // Configure SoftAP
-  WiFi.softAP("iot_plug", "12345678");  // SSID, Password
+  WiFi.softAP(deviceName, "12345678");  // SSID, Password
   Serial.print("SoftAP IP address: ");
   Serial.println(WiFi.softAPIP());
 
