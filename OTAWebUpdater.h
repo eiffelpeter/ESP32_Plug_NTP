@@ -53,6 +53,8 @@ void handleRoot() {
   html += "</form>";
 
   // ssid and password
+  html += "IP is" + WiFi.localIP().toString();
+  html += "<br>";
   html += "<form action=\"/submitSSID\" method=\"get\">";
   html += "ssid: <input type=\"string\" name=\"ssidStr\" value=\"" + ssid + "\">";
   html += "<br>";
@@ -108,10 +110,12 @@ void handleSSIDSubmission() {
     if ((tmp1 != "") && (tmp2 != "")) {
       ssid = tmp1;
       password = tmp2;
+      Serial.printf("received ssid: %s, passwd: %s \n", ssid, password);
       save_nvs = 2;
+    } else {
+      Serial.printf("received invalid ssid: %s, passwd: %s \n", ssid, password);
     }
 
-    Serial.printf("received ssid: %s, passwd: %s \n", ssid, password);
   } else {
     server.send(400, "text/plain", "No number provided.");
   }
