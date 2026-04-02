@@ -1,7 +1,6 @@
 #include <WiFi.h>
 #include "time.h"
 #include "esp_sntp.h"
-#include "led_ctrl.h"
 
 const char* ntpServer1 = "pool.ntp.org";
 const char* ntpServer2 = "time.nist.gov";
@@ -27,7 +26,6 @@ bool requestLocalTime() {
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo)) {
     Serial.println("No time available (yet)");
-    //led_update();  //update_led(LED_R);
     return false;
   }
   Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
@@ -40,7 +38,6 @@ bool requestLocalTime() {
   //Serial.printf("timeinfo.tm_year: %d\n", timeinfo.tm_year);
   current_time = String(timeinfo.tm_hour) + ":" + String(timeinfo.tm_min) + ":" + String(timeinfo.tm_sec);
   current_date = String(timeinfo.tm_year + 1900) + "-" + String(timeinfo.tm_mon + 1) + "-" + String(timeinfo.tm_mday);
-  //led_update();  //update_led(LED_B_ON);
   //do_lvgl_update = true;
 
   //Serial.print("ntp Current Time: " + current_time);
@@ -91,12 +88,9 @@ void sntp_setup(void) {
 
   while (hour == 0 && minute == 0 && second == 0 && retry) {
     get_date_and_time();
-    //led_update();  //update_led(LED_R);
     delay(200);
-    //update_led(LED_OFF);
     Serial.print("#");
     retry--;
   }
   // Serial.print("\n");
-  // led_update();  //update_led(LED_G);
 }

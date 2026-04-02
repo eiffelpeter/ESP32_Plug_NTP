@@ -7,7 +7,6 @@
 #include <Ticker.h>
 
 #include "html.h"
-#include "led_ctrl.h"
 
 WebServer server(80);
 Ticker tkSecond;
@@ -24,6 +23,7 @@ String password = "1qaz2wsx";
 int save_nvs = 0;
 
 void onSwitch1Change(int on);
+void wifiLed_toggle(void);
 
 void handleRoot() {
 
@@ -145,7 +145,7 @@ void handleToggle() {
 
 void everySecond() {
   if (otaDone > 1) {
-    (get_status_led() == LED_OFF) ? set_status_led(LED_B_ON) : set_status_led(LED_OFF);  // Blink
+    wifiLed_toggle();
     Serial.printf("ota: %d%%\n", otaDone);
   }
 }

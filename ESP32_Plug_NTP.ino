@@ -1,7 +1,6 @@
 #include <Preferences.h>  // esp32 nvs
 #include "OTAWebUpdater.h"
 #include "plug_sntp.h"
-#include "led_ctrl.h"
 #include "plug_timer.h"
 #include "esp_mac.h"  // For esp_read_mac
 
@@ -20,6 +19,10 @@ volatile bool button_change = false;
 static unsigned long check_wifi_tick, button_tick, ota_service_tick;
 bool wifi_connected;
 bool request_sync_time = false;
+
+void wifiLed_toggle(void) {
+  digitalWrite(wifiLed, digitalRead(wifiLed) ? LOW : HIGH);
+}
 
 void check_relay_on_off(void) {
 
@@ -78,14 +81,9 @@ static void loop_second_refresh(void) {
       }
     }
   }
-}
 
-void led_update(void) {
-  if (switch1 == 1) {
-    wifi_connected ? set_status_led(LED_B_FADE) : set_status_led(LED_B_BLINK);
-  } else {
-    wifi_connected ? set_status_led(LED_W_FADE) : set_status_led(LED_W_BLINK);
-  }
+  if (wifi_connected == false)
+    wifiLed_toggle();
 }
 
 void onSwitch1Change(int on) {
@@ -104,7 +102,6 @@ void onSwitch1Change(int on) {
   if (on != preferences.getInt("switch1", 1)) {
     preferences.putInt("switch1", on);
   }
-  led_update();
 }
 
 void button_isr() {
@@ -154,10 +151,7 @@ void setup() {
 
   pinMode(RelayPin, OUTPUT);
   pinMode(wifiLed, OUTPUT);
-  digitalWrite(wifiLed, HIGH);  //Turn off WiFi LED
-
-  led_init();
-  digitalRead(RelayPin) ? set_status_led(LED_B_BLINK) : set_status_led(LED_W_BLINK);
+  digitalWrite(wifiLed, LOW);  //Turn off WiFi LED
 
   // nvs
   preferences.begin("my-plug", false);
@@ -187,8 +181,8 @@ void setup() {
   // Connect to Wi-Fi
   WiFi.begin(ssid, password);
   Serial.print("Connecting");
-  set_status_led(LED_B_BLINK);
   while ((WiFi.status() != WL_CONNECTED) && retry) {
+    wifiLed_toggle();
     Serial.print(".");
     delay(200);
     retry--;
@@ -199,6 +193,7 @@ void setup() {
     Serial.print("\nConnected to Wi-Fi network with IP Address: ");
     Serial.println(WiFi.localIP());
     wifi_connected = true;
+    digitalWrite(wifiLed, HIGH);  //Turn on WiFi LED
   } else {
     wifi_connected = false;
   }
@@ -216,7 +211,6 @@ void setup() {
   Serial.println(compile_date);
 
   check_wifi_tick = millis();
-  led_update();
 }
 
 void loop() {
@@ -243,8 +237,6 @@ void loop() {
     }
   }
 
-  led_refresh();
-
   check_nvs();
 
   // ota
@@ -258,11 +250,11 @@ void loop() {
     check_wifi_tick = millis();
     if (WiFi.status() == WL_CONNECTED) {
       wifi_connected = true;
+      digitalWrite(wifiLed, HIGH);  //Turn on WiFi LED
     } else {
       wifi_connected = false;
       WiFi.begin(ssid, password);
       Serial.println("try reconnect wifi");
     }
-    led_update();
   }
 }
