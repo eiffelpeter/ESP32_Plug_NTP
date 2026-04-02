@@ -17,7 +17,7 @@ int switch1;
 int relay_off_time = 19;
 int relay_on_time = 8;
 String ssid = "openwrt-2g";
-String password = "12345678";
+String password = "1qaz2wsx";
 int save_nvs = 0;
 
 void onSwitch1Change(int on);
