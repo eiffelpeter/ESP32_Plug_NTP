@@ -1,7 +1,4 @@
-//#include <Wire.h>         // i2c
 #include <Preferences.h>  // esp32 nvs
-//#include <WiFi.h>
-//#include "time.h"
 #include "OTAWebUpdater.h"
 #include "plug_sntp.h"
 #include "led_ctrl.h"
@@ -10,16 +7,11 @@
 
 const char compile_date[] = __DATE__ " " __TIME__;
 
-/* I2C */
-#define I2C_SCL 23
-#define I2C_SDA 18
-#define I2C_FREQ 400000
-
+// DOIT ESP32 DEVKIT
 // define the GPIO connected with Relays and Buttons
 #define RelayPin 19
-#define Button 35
-#define wifiLed 25
-#define pl7211_rst 22
+#define Button 0
+#define wifiLed 2
 
 // nvs
 Preferences preferences;
@@ -178,10 +170,6 @@ void setup() {
   Serial.printf("ssid: %s \n", ssid);
   Serial.printf("password: %s \n", password);
   onSwitch1Change(preferences.getInt("switch1", 1));
-
-  // Initialize the I2C bus
-  //Wire.begin(I2C_SDA, I2C_SCL, I2C_FREQ);
-  //Serial.println("Initializing I2C bus...");
 
   uint8_t mac[6];
   esp_read_mac(mac, ESP_MAC_WIFI_SOFTAP);  // Read the Bluetooth MAC address
