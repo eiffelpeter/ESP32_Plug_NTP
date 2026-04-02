@@ -6,7 +6,7 @@
 #include "plug_sntp.h"
 #include "led_ctrl.h"
 #include "plug_timer.h"
-#include "esp_mac.h"// For esp_read_mac
+#include "esp_mac.h"  // For esp_read_mac
 
 const char compile_date[] = __DATE__ " " __TIME__;
 
@@ -30,9 +30,14 @@ bool wifi_connected;
 bool request_sync_time = false;
 
 void check_relay_on_off(void) {
+
+  int relay_off_time = relay_off_hour * 60 + relay_off_min;
+  int relay_on_time = relay_on_hour * 60 + relay_on_min;
+  int current_time = hour * 60 + minute;
+
   if (relay_off_time != relay_on_time) {
     if (relay_on_time > relay_off_time) {
-      if ((hour >= relay_off_time) && (hour < relay_on_time)) {  // off
+      if ((current_time >= relay_off_time) && (current_time < relay_on_time)) {  // off
         if (digitalRead(RelayPin) == HIGH)
           onSwitch1Change(0);
       } else {  // on
@@ -40,7 +45,7 @@ void check_relay_on_off(void) {
           onSwitch1Change(1);
       }
     } else {
-      if ((hour >= relay_on_time) && (hour < relay_off_time)) {  // on
+      if ((current_time >= relay_on_time) && (current_time < relay_off_time)) {  // on
         if (digitalRead(RelayPin) == LOW)
           onSwitch1Change(1);
       } else {  // off
@@ -48,7 +53,8 @@ void check_relay_on_off(void) {
           onSwitch1Change(0);
       }
     }
-  }
+  } else
+    Serial.println("warning on off time is same");
 }
 
 static void loop_second_refresh(void) {
@@ -58,25 +64,25 @@ static void loop_second_refresh(void) {
     minute++;
 
     //Serial.printf("time: %d:%d:%d \n", hour, minute, second);
+    // relay
+    //check_relay_on_off();
+    if ((hour == relay_off_hour) && (minute == relay_off_min)) {
+      onSwitch1Change(0);
+    }
+
+    if ((hour == relay_on_hour) && (minute == relay_on_min)) {
+      onSwitch1Change(1);
+    }
+
 
     if (minute > 59) {
       minute = 0;
       hour++;
       request_sync_time = true;
-      Serial.println("request to sync time");
+      Serial.println("request to sync time every hour");
 
       if (hour > 23) {
         hour = 0;
-      }
-
-      // relay
-      //check_relay_on_off();
-      if (hour == relay_off_time) {
-        onSwitch1Change(0);
-      }
-
-      if (hour == relay_on_time) {
-        onSwitch1Change(1);
       }
     }
   }
@@ -126,8 +132,10 @@ void check_nvs(void) {
 
     switch (save_nvs) {
       case 1:
-        preferences.putInt("relay_off_time", relay_off_time);
-        preferences.putInt("relay_on_time", relay_on_time);
+        preferences.putInt("relay_off_hour", relay_off_hour);
+        preferences.putInt("relay_on_hour", relay_on_hour);
+        preferences.putInt("relay_off_min", relay_off_min);
+        preferences.putInt("relay_on_min", relay_on_min);
         check_relay_on_off();
         break;
       case 2:
@@ -161,8 +169,10 @@ void setup() {
 
   // nvs
   preferences.begin("my-plug", false);
-  relay_off_time = preferences.getInt("relay_off_time", relay_off_time);
-  relay_on_time = preferences.getInt("relay_on_time", relay_on_time);
+  relay_off_hour = preferences.getInt("relay_off_hour", relay_off_hour);
+  relay_on_hour = preferences.getInt("relay_on_hour", relay_on_hour);
+  relay_off_min = preferences.getInt("relay_off_min", relay_off_min);
+  relay_on_min = preferences.getInt("relay_on_min", relay_on_min);
   ssid = preferences.getString("ssid", ssid);
   password = preferences.getString("password", password);
   Serial.printf("ssid: %s \n", ssid);
@@ -174,7 +184,7 @@ void setup() {
   //Serial.println("Initializing I2C bus...");
 
   uint8_t mac[6];
-  esp_read_mac(mac, ESP_MAC_WIFI_SOFTAP); // Read the Bluetooth MAC address
+  esp_read_mac(mac, ESP_MAC_WIFI_SOFTAP);  // Read the Bluetooth MAC address
   char deviceName[30];
   sprintf(deviceName, "PLUG_%02X%02X%02X", mac[3], mac[4], mac[5]);
 
