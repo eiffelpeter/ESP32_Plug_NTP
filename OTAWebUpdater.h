@@ -14,8 +14,11 @@ Ticker tkSecond;
 uint8_t otaDone = 0;
 
 int switch1;
-int relay_off_time = 19;
-int relay_on_time = 8;
+int relay_off_hour = 19;
+int relay_on_hour = 8;
+int relay_off_min = 0;
+int relay_on_min = 0;
+
 String ssid = "openwrt-2g";
 String password = "1qaz2wsx";
 int save_nvs = 0;
@@ -43,9 +46,11 @@ void handleRoot() {
 
   // relay on off time
   html += "<form action=\"/submitNumber\" method=\"get\">";
-  html += "relay off time hour(0~23): <input type=\"number\" name=\"offNumber\" value=\"" + String(relay_off_time) + "\">";
+  html += "relay off hour(0~23): <input type=\"number\" name=\"offHour\" min=\"0\" max=\"23\" value=\"" + String(relay_off_hour) + "\">";
+  html += " minute(0~59): <input type=\"number\" name=\"offMin\" min=\"0\" max=\"59\" value=\"" + String(relay_off_min) + "\">";
   html += "<br>";
-  html += "relay on time hour(0~23): <input type=\"number\" name=\"onNumber\" value=\"" + String(relay_on_time) + "\">";
+  html += "relay on hour(0~23): <input type=\"number\" name=\"onHour\" min=\"0\" max=\"23\" value=\"" + String(relay_on_hour) + "\">";
+  html += " minute(0~59): <input type=\"number\" name=\"onMin\" min=\"0\" max=\"59\" value=\"" + String(relay_on_min) + "\">";
   html += "<br>";
   html += "<input type=\"submit\" value=\"Submit\">";
   html += "<br>";
@@ -72,24 +77,28 @@ void handleRoot() {
 }
 
 void handleNumberSubmission() {
-  int tmp1, tmp2;
+  int tmp1, tmp2, tmp3, tmp4;
 
-  if ((server.hasArg("offNumber")) && (server.hasArg("onNumber"))) {
-    tmp1 = server.arg("offNumber").toInt();
-    tmp2 = server.arg("onNumber").toInt();
+  if ((server.hasArg("offHour")) && (server.hasArg("onHour")) && (server.hasArg("offMin")) && (server.hasArg("onMin"))) {
+    tmp1 = server.arg("offHour").toInt();
+    tmp2 = server.arg("onHour").toInt();
+    tmp3 = server.arg("offMin").toInt();
+    tmp4 = server.arg("onMin").toInt();
 
     server.sendHeader("Refresh", "10");
     server.sendHeader("Location", "/");
     server.send(307);
 
     // check value are valid ?
-    if (((tmp1 >= 0) && (tmp1 <= 23)) && ((tmp2 >= 0) && (tmp2 <= 23))) {
-      relay_off_time = tmp1;
-      relay_on_time = tmp2;
+    if (((tmp1 >= 0) && (tmp1 <= 23)) && ((tmp2 >= 0) && (tmp2 <= 23)) && ((tmp3 >= 0) && (tmp3 <= 59)) && ((tmp4 >= 0) && (tmp4 <= 59))) {
+      relay_off_hour = tmp1;
+      relay_on_hour = tmp2;
+      relay_off_min = tmp3;
+      relay_on_min = tmp4;
       save_nvs = 1;
     }
 
-    Serial.printf("received time hour for relay off: %d, relay on: %d \n", relay_off_time, relay_on_time);
+    Serial.printf("received time hour for relay off: %d:%d, relay on: %d:%d \n", relay_off_hour, relay_off_min, relay_on_hour, relay_on_min);
   } else {
     server.send(400, "text/plain", "No number provided.");
   }
