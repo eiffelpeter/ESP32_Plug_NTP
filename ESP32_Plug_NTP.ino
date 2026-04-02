@@ -1,4 +1,4 @@
-#include <Wire.h>         // i2c
+//#include <Wire.h>         // i2c
 #include <Preferences.h>  // esp32 nvs
 //#include <WiFi.h>
 //#include "time.h"
@@ -133,6 +133,7 @@ void check_nvs(void) {
       case 2:
         preferences.putString("ssid", ssid);
         preferences.putString("password", password);
+        WiFi.softAPdisconnect();
         delay(1000);
         ESP.restart();  // restart to connect new wifi ap
         break;
@@ -169,13 +170,13 @@ void setup() {
   onSwitch1Change(preferences.getInt("switch1", 1));
 
   // Initialize the I2C bus
-  Wire.begin(I2C_SDA, I2C_SCL, I2C_FREQ);
-  Serial.println("Initializing I2C bus...");
+  //Wire.begin(I2C_SDA, I2C_SCL, I2C_FREQ);
+  //Serial.println("Initializing I2C bus...");
 
   uint8_t mac[6];
   esp_read_mac(mac, ESP_MAC_WIFI_SOFTAP); // Read the Bluetooth MAC address
   char deviceName[30];
-  sprintf(deviceName, "PLUG_%02X%02X%02X%02X%02X%02X",mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  sprintf(deviceName, "PLUG_%02X%02X%02X", mac[3], mac[4], mac[5]);
 
   // Set WiFi mode to AP_STA
   WiFi.mode(WIFI_AP_STA);
