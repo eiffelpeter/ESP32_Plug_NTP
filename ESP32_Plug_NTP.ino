@@ -19,6 +19,7 @@ volatile bool button_change = false;
 static unsigned long check_wifi_tick, button_tick, ota_service_tick;
 bool wifi_connected;
 bool request_sync_time = false;
+int relay_current_time;
 
 void wifiLed_toggle(void) {
   digitalWrite(wifiLed, digitalRead(wifiLed) ? LOW : HIGH);
@@ -26,13 +27,9 @@ void wifiLed_toggle(void) {
 
 void check_relay_on_off(void) {
 
-  int relay_off_time = relay_off_hour * 60 + relay_off_min;
-  int relay_on_time = relay_on_hour * 60 + relay_on_min;
-  int current_time = hour * 60 + minute;
-
   if (relay_off_time != relay_on_time) {
     if (relay_on_time > relay_off_time) {
-      if ((current_time >= relay_off_time) && (current_time < relay_on_time)) {  // off
+      if ((relay_current_time >= relay_off_time) && (relay_current_time < relay_on_time)) {  // off
         if (digitalRead(RelayPin) == HIGH)
           onSwitch1Change(0);
       } else {  // on
@@ -40,7 +37,7 @@ void check_relay_on_off(void) {
           onSwitch1Change(1);
       }
     } else {
-      if ((current_time >= relay_on_time) && (current_time < relay_off_time)) {  // on
+      if ((relay_current_time >= relay_on_time) && (relay_current_time < relay_off_time)) {  // on
         if (digitalRead(RelayPin) == LOW)
           onSwitch1Change(1);
       } else {  // off
@@ -58,18 +55,6 @@ static void loop_second_refresh(void) {
     second = 0;
     minute++;
 
-    //Serial.printf("time: %d:%d:%d \n", hour, minute, second);
-    // relay
-    //check_relay_on_off();
-    if ((hour == relay_off_hour) && (minute == relay_off_min)) {
-      onSwitch1Change(0);
-    }
-
-    if ((hour == relay_on_hour) && (minute == relay_on_min)) {
-      onSwitch1Change(1);
-    }
-
-
     if (minute > 59) {
       minute = 0;
       hour++;
@@ -80,6 +65,21 @@ static void loop_second_refresh(void) {
         hour = 0;
       }
     }
+
+
+    // check time to on-off relay
+    relay_current_time = hour * 60 + minute;
+
+    //Serial.printf("time: %d:%d:%d \n", hour, minute, second);
+    //check_relay_on_off();
+    if (relay_current_time == relay_off_time) {
+      onSwitch1Change(0);
+    }
+
+    if (relay_current_time == relay_on_time) {
+      onSwitch1Change(1);
+    }
+
   }
 
   if (wifi_connected == false)
@@ -121,10 +121,8 @@ void check_nvs(void) {
 
     switch (save_nvs) {
       case 1:
-        preferences.putInt("relay_off_hour", relay_off_hour);
-        preferences.putInt("relay_on_hour", relay_on_hour);
-        preferences.putInt("relay_off_min", relay_off_min);
-        preferences.putInt("relay_on_min", relay_on_min);
+        preferences.putInt("relay_off_time", relay_off_time);
+        preferences.putInt("relay_on_time", relay_on_time);
         check_relay_on_off();
         break;
       case 2:
@@ -155,10 +153,8 @@ void setup() {
 
   // nvs
   preferences.begin("my-plug", false);
-  relay_off_hour = preferences.getInt("relay_off_hour", relay_off_hour);
-  relay_on_hour = preferences.getInt("relay_on_hour", relay_on_hour);
-  relay_off_min = preferences.getInt("relay_off_min", relay_off_min);
-  relay_on_min = preferences.getInt("relay_on_min", relay_on_min);
+  relay_off_time = preferences.getInt("relay_off_time", relay_off_time);
+  relay_on_time = preferences.getInt("relay_on_time", relay_on_time);
   ssid = preferences.getString("ssid", ssid);
   password = preferences.getString("password", password);
   Serial.printf("ssid: %s \n", ssid);
@@ -196,6 +192,7 @@ void setup() {
     digitalWrite(wifiLed, HIGH);  //Turn on WiFi LED
   } else {
     wifi_connected = false;
+    digitalWrite(wifiLed, LOW);  //Turn off WiFi LED
   }
 
   /* init OTA web */

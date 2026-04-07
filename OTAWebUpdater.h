@@ -17,6 +17,8 @@ int relay_off_hour = 19;
 int relay_on_hour = 8;
 int relay_off_min = 0;
 int relay_on_min = 0;
+int relay_off_time = relay_off_hour*60 + relay_off_min; // hour*60 + min
+int relay_on_time = relay_on_hour*60 + relay_on_min;    // hour*60 + min
 
 String ssid = "openwrt-2g";
 String password = "1qaz2wsx";
@@ -95,10 +97,14 @@ void handleNumberSubmission() {
       relay_on_hour = tmp2;
       relay_off_min = tmp3;
       relay_on_min = tmp4;
-      save_nvs = 1;
-    }
 
-    Serial.printf("received time hour for relay off: %d:%d, relay on: %d:%d \n", relay_off_hour, relay_off_min, relay_on_hour, relay_on_min);
+      relay_off_time = relay_off_hour * 60 + relay_off_min;
+      relay_on_time = relay_on_hour * 60 + relay_on_min;
+
+      save_nvs = 1;
+      Serial.printf("received time hour for relay off: %d:%d, relay on: %d:%d \n", relay_off_hour, relay_off_min, relay_on_hour, relay_on_min);
+    } else
+        Serial.printf("invalid time hour for relay off: %d:%d, relay on: %d:%d \n", tmp1, tmp2, tmp3, tmp4);
   } else {
     server.send(400, "text/plain", "No number provided.");
   }
