@@ -22,6 +22,7 @@ int relay_on_time = relay_on_hour*60 + relay_on_min;    // hour*60 + min
 
 String ssid = "openwrt-2g";
 String password = "1qaz2wsx";
+String dev_name;
 int save_nvs = 0;
 
 void onSwitch1Change(int on);
@@ -66,6 +67,17 @@ void handleRoot() {
   html += "ssid: <input type=\"string\" name=\"ssidStr\" value=\"" + ssid + "\">";
   html += "<br>";
   html += "password: <input type=\"string\" name=\"passwdStr\" >";
+  html += "<br>";
+  html += "<input type=\"submit\" value=\"Enter\">";
+  html += "<br>";
+  html += "=====================================";
+  html += "</form>";
+
+  // device name for softAP
+  html += "softAP IP is" + WiFi.softAPIP().toString();
+  html += "<br>";
+  html += "<form action=\"/submit_softAP_SSID\" method=\"get\">";
+  html += "softAP ssid: <input type=\"string\" name=\"softAPssidStr\" value=\"" + dev_name + "\">";
   html += "<br>";
   html += "<input type=\"submit\" value=\"Enter\">";
   html += "<br>";
@@ -129,6 +141,31 @@ void handleSSIDSubmission() {
       save_nvs = 2;
     } else {
       Serial.printf("received invalid ssid: %s, passwd: %s \n", ssid, password);
+    }
+
+  } else {
+    server.send(400, "text/plain", "No number provided.");
+  }
+}
+
+void handlesoftAPSSIDSubmission() {
+  String tmp1;
+
+  if ((server.hasArg("softAPssidStr")) ) {
+    tmp1 = server.arg("softAPssidStr");
+
+    server.sendHeader("Refresh", "10");
+    server.sendHeader("Location", "/");
+    server.send(307);
+
+    // check value are valid ?
+    if ((tmp1 != "")) {
+      dev_name = tmp1;
+
+      Serial.printf("received dev_name: %s, passwd: %s \n", dev_name);
+      save_nvs = 3;
+    } else {
+      Serial.printf("received invalid dev_name: %s\n", dev_name);
     }
 
   } else {
@@ -217,6 +254,7 @@ void webServerInit() {
   server.on("/", handleRoot);
   server.on("/submitNumber", HTTP_GET, handleNumberSubmission);
   server.on("/submitSSID", HTTP_GET, handleSSIDSubmission);
+  server.on("/submit_softAP_SSID", HTTP_GET, handlesoftAPSSIDSubmission);
   server.on("/toggle", handleToggle);
 
   server.begin();
