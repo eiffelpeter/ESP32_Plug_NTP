@@ -143,6 +143,12 @@ void check_nvs(void) {
         delay(1000);
         ESP.restart();  // restart to connect new wifi ap
         break;
+      case 3:
+        preferences.putString("dev_name", dev_name);
+        WiFi.softAPdisconnect();
+        delay(1000);
+        ESP.restart();  // restart to connect new wifi ap
+        break;
     }
     save_nvs = 0;
   }
@@ -182,13 +188,15 @@ void setup() {
   uint8_t mac[6];
   esp_read_mac(mac, ESP_MAC_WIFI_SOFTAP);  // Read the Bluetooth MAC address
   char deviceName[30];
-  sprintf(deviceName, "PLUG_%02X%02X%02X", mac[3], mac[4], mac[5]);
+  snprintf(deviceName, sizeof(deviceName), "Plug_%02X%02X%02X", mac[3], mac[4], mac[5]);  // default device name for softAP
+  dev_name = String(deviceName);
+  dev_name = preferences.getString("dev_name", dev_name);
 
   // Set WiFi mode to AP_STA
   WiFi.mode(WIFI_AP_STA);
 
   // Configure SoftAP
-  WiFi.softAP(deviceName, "12345678");  // SSID, Password
+  WiFi.softAP(dev_name, "1qaz2wsx");  // SSID, Password
   Serial.print("SoftAP IP address: ");
   Serial.println(WiFi.softAPIP());
 
