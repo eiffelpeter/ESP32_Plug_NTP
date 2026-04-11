@@ -6,6 +6,8 @@
 
 const char compile_date[] = __DATE__ " " __TIME__;
 
+#define RELAY_CTRL_INV 1
+
 // DOIT ESP32 DEVKIT
 // define the GPIO connected with Relays and Buttons
 #define RelayPin 19
@@ -30,18 +32,18 @@ void check_relay_on_off(void) {
   if (relay_off_time != relay_on_time) {
     if (relay_on_time > relay_off_time) {
       if ((relay_current_time >= relay_off_time) && (relay_current_time < relay_on_time)) {  // off
-        if (digitalRead(RelayPin) == HIGH)
+        if (1 == switch1)
           onSwitch1Change(0);
       } else {  // on
-        if (digitalRead(RelayPin) == LOW)
+        if (0 == switch1)
           onSwitch1Change(1);
       }
     } else {
       if ((relay_current_time >= relay_on_time) && (relay_current_time < relay_off_time)) {  // on
-        if (digitalRead(RelayPin) == LOW)
+        if (0 == switch1)
           onSwitch1Change(1);
       } else {  // off
-        if (digitalRead(RelayPin) == HIGH)
+        if (1 == switch1)
           onSwitch1Change(0);
       }
     }
@@ -91,10 +93,10 @@ void onSwitch1Change(int on) {
 
   //Control the device
   if (on == 1) {
-    digitalWrite(RelayPin, HIGH);
+    digitalWrite(RelayPin, RELAY_CTRL_INV ? LOW : HIGH);
     Serial.print("Device1 ON");
   } else {
-    digitalWrite(RelayPin, LOW);
+    digitalWrite(RelayPin, RELAY_CTRL_INV ? HIGH : LOW);
     Serial.print("Device1 OFF");
   }
 
@@ -156,6 +158,8 @@ void setup() {
   pinMode(RelayPin, OUTPUT);
   pinMode(wifiLed, OUTPUT);
   digitalWrite(wifiLed, LOW);  //Turn off WiFi LED
+
+  switch1 = RELAY_CTRL_INV ? (!digitalRead(RelayPin)) : digitalRead(RelayPin);
 
   // nvs
   preferences.begin("my-plug", false);
@@ -238,7 +242,7 @@ void loop() {
       delay(1000);
       ESP.restart();
     } else {
-      onSwitch1Change(digitalRead(RelayPin) ? 0 : 1);
+      onSwitch1Change(switch1 ? 0 : 1);
     }
   }
 
