@@ -178,7 +178,7 @@ void setup() {
   digitalWrite(wifiLed, HIGH);  //Turn off WiFi LED
 
   led_init();
-  digitalRead(RelayPin) ? set_status_led(LED_B_BLINK) : set_status_led(LED_W_BLINK);
+  digitalRead(RelayPin) ? set_status_led(LED_B_ON) : set_status_led(LED_W_ON);
 
   // nvs
   preferences.begin("my-plug", false);
@@ -212,8 +212,8 @@ void setup() {
   // Connect to Wi-Fi
   WiFi.begin(ssid, password);
   Serial.print("Connecting");
-  set_status_led(LED_B_BLINK);
   while ((WiFi.status() != WL_CONNECTED) && retry) {
+    (get_status_led() == LED_OFF) ? (digitalRead(RelayPin) ? set_status_led(LED_B_ON) : set_status_led(LED_W_ON)) : set_status_led(LED_OFF);  // Blink
     Serial.print(".");
     delay(200);
     retry--;
