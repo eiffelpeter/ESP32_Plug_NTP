@@ -189,13 +189,6 @@ void handleToggle() {
   Serial.printf("handleToggle relay is %s \n", switch1 ? "on" : "off");
 }
 
-void everySecond() {
-  if (otaDone > 1) {
-    wifiLed_toggle();
-    Serial.printf("ota: %d%%\n", otaDone);
-  }
-}
-
 void handleUpdateEnd() {
   server.sendHeader("Connection", "close");
   if (Update.hasError()) {
@@ -264,7 +257,6 @@ void webServerInit() {
 
   Serial.printf("Web Server ready at http://esp32.local or http://%s\n", WiFi.localIP().toString().c_str());
 
-  tkSecond.attach(1, everySecond);
 }
 
 #endif

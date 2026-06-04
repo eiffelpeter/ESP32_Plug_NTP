@@ -146,6 +146,13 @@ void check_nvs(void) {
   }
 }
 
+void everySecond() {
+  if (otaDone > 1) {
+    wifiLed_toggle();
+    Serial.printf("ota: %d%%\n", otaDone);
+  }
+}
+
 void setup() {
   int retry = 50;
 
@@ -210,6 +217,7 @@ void setup() {
 
   /* init OTA web */
   webServerInit();
+  tkSecond.attach(1, everySecond);
 
   // sntp
   sntp_setup();
