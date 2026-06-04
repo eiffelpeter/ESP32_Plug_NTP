@@ -156,6 +156,13 @@ void check_nvs(void) {
   }
 }
 
+void everySecond() {
+  if (otaDone > 1) {
+    (get_status_led() == LED_OFF) ? set_status_led(LED_B_ON) : set_status_led(LED_OFF);  // Blink
+    Serial.printf("ota: %d%%\n", otaDone);
+  }
+}
+
 void setup() {
   int retry = 50;
 
@@ -223,6 +230,7 @@ void setup() {
 
   /* init OTA web */
   webServerInit();
+  tkSecond.attach(1, everySecond);
 
   // sntp
   sntp_setup();
