@@ -208,6 +208,7 @@ void setup() {
   if (retry) {
     Serial.print("\nConnected to Wi-Fi network with IP Address: ");
     Serial.println(WiFi.localIP());
+    WiFi.enableAP(false);
     wifi_connected = true;
     digitalWrite(wifiLed, HIGH);  //Turn on WiFi LED
   } else {
@@ -267,9 +268,11 @@ void loop() {
   if (millis() - check_wifi_tick > 600000) {
     check_wifi_tick = millis();
     if (WiFi.status() == WL_CONNECTED) {
+      WiFi.enableAP(false);
       wifi_connected = true;
       digitalWrite(wifiLed, HIGH);  //Turn on WiFi LED
     } else {
+      WiFi.enableAP(true);
       wifi_connected = false;
       WiFi.begin(ssid, password);
       Serial.println("try reconnect wifi");
