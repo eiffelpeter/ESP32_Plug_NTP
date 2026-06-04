@@ -82,6 +82,7 @@ static void loop_second_refresh(void) {
       onSwitch1Change(1);
     }
 
+    current_time = String(hour) + ":" + String(minute);
   }
 
   if (wifi_connected == false)
