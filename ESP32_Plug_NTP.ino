@@ -86,6 +86,8 @@ static void loop_second_refresh(void) {
     }
 
   }
+
+  current_time = String(hour) + ":" + String(minute);
 }
 
 void led_update(void) {
