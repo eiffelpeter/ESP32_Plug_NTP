@@ -19,7 +19,7 @@ String current_time;
 static int32_t hour;
 static int32_t minute;
 static int32_t second;
-static int day_of_week;
+int day_of_week;
 
 
 

@@ -8,8 +8,6 @@
 #include "plug_timer.h"
 #include "esp_mac.h"  // For esp_read_mac
 
-const char compile_date[] = __DATE__ " " __TIME__;
-
 /* I2C */
 #define I2C_SCL 23
 #define I2C_SDA 18
@@ -77,12 +75,16 @@ static void loop_second_refresh(void) {
 
     //Serial.printf("time: %d:%d:%d \n", hour, minute, second);
     //check_relay_on_off();
-    if (relay_current_time == relay_off_time) {
+    if ((false == weekend_run) && ((0 == day_of_week) || (6 == day_of_week))) {
       onSwitch1Change(0);
-    }
+    } else {
+      if (relay_current_time == relay_off_time) {
+        onSwitch1Change(0);
+      }
 
-    if (relay_current_time == relay_on_time) {
-      onSwitch1Change(1);
+      if (relay_current_time == relay_on_time) {
+        onSwitch1Change(1);
+      }
     }
 
     current_time = String(hour) + ":" + String(minute);

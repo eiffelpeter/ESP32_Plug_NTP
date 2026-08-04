@@ -16,12 +16,15 @@ Ticker tkSecond;
 uint8_t otaDone = 0;
 
 int switch1;
+int weekend_run = false;
 int relay_off_hour = 19;
 int relay_on_hour = 8;
 int relay_off_min = 0;
 int relay_on_min = 0;
-int relay_off_time = relay_off_hour*60 + relay_off_min; // hour*60 + min
-int relay_on_time = relay_on_hour*60 + relay_on_min;    // hour*60 + min
+int relay_off_time = relay_off_hour * 60 + relay_off_min;  // hour*60 + min
+int relay_on_time = relay_on_hour * 60 + relay_on_min;     // hour*60 + min
+
+const char compile_date[] = __DATE__ " " __TIME__;
 
 String ssid = "openwrt-2g";
 String password = "1qaz2wsx";
@@ -33,6 +36,11 @@ void onSwitch1Change(int on);
 void handleRoot() {
 
   String html;
+
+  html += "<form>";
+  html += "compile_date: " + String(compile_date);
+  html += "<br>";
+  html += "</form>";
 
   // relay control on web
   html += "<form>";
@@ -49,8 +57,23 @@ void handleRoot() {
   html += "=====================================";
   html += "</form>";
 
+  // weekend run web
+  html += "<form>";
+  if (weekend_run) {
+    html += "<input type=\"button\" value=\"OFF\" onclick=\"location.href='/weekend'\">";
+    html += "<br>";
+    html += "weekend is run";
+  } else {
+    html += "<input type=\"button\" value=\"ON\" onclick=\"location.href='/weekend'\">";
+    html += "<br>";
+    html += "weekend is not run";
+  }
+  html += "<br>";
+  html += "=====================================";
+  html += "</form>";
+
   // relay on off time
-  html += "current time: " + current_time ;
+  html += "current time: " + current_time;
   html += "<form action=\"/submitNumber\" method=\"get\">";
   html += "relay off hour(0~23): <input type=\"number\" name=\"offHour\" min=\"0\" max=\"23\" value=\"" + String(relay_off_hour) + "\">";
   html += " minute(0~59): <input type=\"number\" name=\"offMin\" min=\"0\" max=\"59\" value=\"" + String(relay_off_min) + "\">";
@@ -119,7 +142,7 @@ void handleNumberSubmission() {
       save_nvs = 1;
       Serial.printf("received time hour for relay off: %d:%d, relay on: %d:%d \n", relay_off_hour, relay_off_min, relay_on_hour, relay_on_min);
     } else
-        Serial.printf("invalid time hour for relay off: %d:%d, relay on: %d:%d \n", tmp1, tmp2, tmp3, tmp4);
+      Serial.printf("invalid time hour for relay off: %d:%d, relay on: %d:%d \n", tmp1, tmp2, tmp3, tmp4);
   } else {
     server.send(400, "text/plain", "No number provided.");
   }
@@ -154,7 +177,7 @@ void handleSSIDSubmission() {
 void handlesoftAPSSIDSubmission() {
   String tmp1;
 
-  if ((server.hasArg("softAPssidStr")) ) {
+  if ((server.hasArg("softAPssidStr"))) {
     tmp1 = server.arg("softAPssidStr");
 
     server.sendHeader("Refresh", "10");
@@ -187,6 +210,15 @@ void handleToggle() {
   server.send(307);
 
   Serial.printf("handleToggle relay is %s \n", switch1 ? "on" : "off");
+}
+
+void handleWeekend() {
+  weekend_run = weekend_run ? 0 : 1;
+  server.sendHeader("Refresh", "10");
+  server.sendHeader("Location", "/");
+  server.send(307);
+
+  Serial.printf("handleWeekend is %s \n", weekend_run ? "on" : "off");
 }
 
 void handleUpdateEnd() {
@@ -252,11 +284,11 @@ void webServerInit() {
   server.on("/submitSSID", HTTP_GET, handleSSIDSubmission);
   server.on("/submit_softAP_SSID", HTTP_GET, handlesoftAPSSIDSubmission);
   server.on("/toggle", handleToggle);
+  server.on("/weekend", handleWeekend);
 
   server.begin();
 
   Serial.printf("Web Server ready at http://esp32.local or http://%s\n", WiFi.localIP().toString().c_str());
-
 }
 
 #endif
