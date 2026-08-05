@@ -137,6 +137,10 @@ void check_nvs(void) {
       case 1:
         preferences.putInt("relay_off_time", relay_off_time);
         preferences.putInt("relay_on_time", relay_on_time);
+        preferences.putInt("relay_off_hour", relay_off_hour);
+        preferences.putInt("relay_on_hour", relay_on_hour);
+        preferences.putInt("relay_off_min", relay_off_min);
+        preferences.putInt("relay_on_min", relay_on_min);
         check_relay_on_off();
         break;
       case 2:
@@ -185,6 +189,10 @@ void setup() {
   preferences.begin("my-plug", false);
   relay_off_time = preferences.getInt("relay_off_time", relay_off_time);
   relay_on_time = preferences.getInt("relay_on_time", relay_on_time);
+  relay_off_hour = preferences.getInt("relay_off_hour", relay_off_hour);
+  relay_on_hour = preferences.getInt("relay_on_hour", relay_on_hour);
+  relay_off_min = preferences.getInt("relay_off_min", relay_off_min);
+  relay_on_min = preferences.getInt("relay_on_min", relay_on_min);
   ssid = preferences.getString("ssid", ssid);
   password = preferences.getString("password", password);
   Serial.printf("ssid: %s \n", ssid);

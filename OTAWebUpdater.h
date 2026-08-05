@@ -38,6 +38,8 @@ void handleRoot() {
   String html;
 
   html += "<form>";
+  html += "current time: " + current_time;
+  html += "<br>";
   html += "compile_date: " + String(compile_date);
   html += "<br>";
   html += "</form>";
@@ -73,7 +75,6 @@ void handleRoot() {
   html += "</form>";
 
   // relay on off time
-  html += "current time: " + current_time;
   html += "<form action=\"/submitNumber\" method=\"get\">";
   html += "relay off hour(0~23): <input type=\"number\" name=\"offHour\" min=\"0\" max=\"23\" value=\"" + String(relay_off_hour) + "\">";
   html += " minute(0~59): <input type=\"number\" name=\"offMin\" min=\"0\" max=\"59\" value=\"" + String(relay_off_min) + "\">";
