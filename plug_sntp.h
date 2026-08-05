@@ -19,7 +19,7 @@ String current_time;
 static int32_t hour;
 static int32_t minute;
 static int32_t second;
-int day_of_week;
+static int day_of_week = -1; // if default 0, will cause relay off again when wifi not connected and weekend_run false
 
 
 
