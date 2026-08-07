@@ -7,6 +7,7 @@
 #include "led_ctrl.h"
 #include "plug_timer.h"
 #include "esp_mac.h"  // For esp_read_mac
+#include "BluetoothSerial.h"
 
 /* I2C */
 #define I2C_SCL 23
@@ -18,6 +19,18 @@
 #define Button 35
 #define wifiLed 25
 #define pl7211_rst 22
+
+// Check if Bluetooth is available
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
+
+// Check Serial Port Profile
+#if !defined(CONFIG_BT_SPP_ENABLED)
+#error Serial Port Profile for Bluetooth is not available or not enabled. It is only available for the ESP32 chip.
+#endif
+
+BluetoothSerial SerialBT;
 
 // nvs
 Preferences preferences;
@@ -204,7 +217,7 @@ void setup() {
   //Serial.println("Initializing I2C bus...");
 
   uint8_t mac[6];
-  esp_read_mac(mac, ESP_MAC_WIFI_SOFTAP);  // Read the Bluetooth MAC address
+  esp_read_mac(mac, ESP_MAC_WIFI_SOFTAP);  // Read wifi softap MAC address
   char deviceName[30];
   snprintf(deviceName, sizeof(deviceName), "Plug_%02X%02X%02X", mac[3], mac[4], mac[5]);  // default device name for softAP
   dev_name = String(deviceName);
@@ -237,6 +250,11 @@ void setup() {
   } else {
     wifi_connected = false;
   }
+
+  // setup bt spp
+  esp_read_mac(mac, ESP_MAC_BT);                                                          // Read the Bluetooth MAC address
+  snprintf(deviceName, sizeof(deviceName), "Plug_%02X%02X%02X", mac[3], mac[4], mac[5]);  // default device name for BT
+  SerialBT.begin(deviceName);
 
   /* init OTA web */
   webServerInit();
@@ -302,5 +320,16 @@ void loop() {
       Serial.println("try reconnect wifi");
     }
     led_update();
+  }
+
+  // enter to print ip
+  if (SerialBT.available()) {
+    SerialBT.read();
+    if (WiFi.status() == WL_CONNECTED) {
+      SerialBT.print("Connected to Wi-Fi network. IP Address: ");
+      SerialBT.println(WiFi.localIP());
+    } else {
+      SerialBT.println("Not Connect to Wi-Fi network. No IP Address");
+    }
   }
 }
