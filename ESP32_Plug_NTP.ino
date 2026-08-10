@@ -148,8 +148,6 @@ void check_nvs(void) {
 
     switch (save_nvs) {
       case 1:
-        preferences.putInt("relay_off_time", relay_off_time);
-        preferences.putInt("relay_on_time", relay_on_time);
         preferences.putInt("relay_off_hour", relay_off_hour);
         preferences.putInt("relay_on_hour", relay_on_hour);
         preferences.putInt("relay_off_min", relay_off_min);
@@ -200,8 +198,6 @@ void setup() {
 
   // nvs
   preferences.begin("my-plug", false);
-  relay_off_time = preferences.getInt("relay_off_time", relay_off_time);
-  relay_on_time = preferences.getInt("relay_on_time", relay_on_time);
   relay_off_hour = preferences.getInt("relay_off_hour", relay_off_hour);
   relay_on_hour = preferences.getInt("relay_on_hour", relay_on_hour);
   relay_off_min = preferences.getInt("relay_off_min", relay_off_min);
@@ -211,6 +207,8 @@ void setup() {
   Serial.printf("ssid: %s \n", ssid);
   Serial.printf("password: %s \n", password);
   onSwitch1Change(preferences.getInt("switch1", 1));
+  relay_off_time = relay_off_hour * 60 + relay_off_min;
+  relay_on_time = relay_on_hour * 60 + relay_on_min;
 
   // Initialize the I2C bus
   //Wire.begin(I2C_SDA, I2C_SCL, I2C_FREQ);
