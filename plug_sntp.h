@@ -19,7 +19,7 @@ String current_time;
 static int32_t hour;
 static int32_t minute;
 static int32_t second;
-static int day_of_week = -1; // if default 0, will cause relay off again when wifi not connected and weekend_run false
+static int day_of_week = -1;  // if default 0, will cause relay off again when wifi not connected and weekend_run false
 
 
 
@@ -53,7 +53,7 @@ bool get_date_and_time() {
   if (WiFi.status() == WL_CONNECTED) {
     return requestLocalTime();
   } else {
-    Serial.println("Not connected to Wi-Fi");
+    Serial.printf("Not connected to Wi-Fi (status:%d)\n", WiFi.status());
     return false;
   }
 }
